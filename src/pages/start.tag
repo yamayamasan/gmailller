@@ -29,7 +29,6 @@
       webviewSrc: null,
       showWebview: false,
     }, this);
-    view.init();
 
     toAuthGmail() {
       view.sets({

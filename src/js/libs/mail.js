@@ -19,15 +19,21 @@ class Mail {
     return new Promise((resolve, reject) => {
       simpleParser(this.body, (err, mail) => {
         if (err) reject(err);
-        // console.log(mail);
-        mail.html = this.convertHTML(mail.html);
+        const copy = _.cloneDeep(mail);
+        if (mail.html) {
+          copy.html = this.convertText(mail.html);
+          copy.content = mail.html;
+        } else {
+          copy.text = this.convertText(mail.text);
+          copy.content = mail.text;
+        }
         // console.log(mail);
         resolve(mail);
       });
     });
   }
 
-  convertHTML(text) {
+  convertText(text) {
     let trans = null;
     const object = Object.assign({}, this.object);
     this.object = {};
@@ -41,16 +47,16 @@ class Mail {
   }
 
   getCharset() {
-    const reg = this.body.match(/charset\=.*/);
+    const reg = this.body.match(/charset=.*/);
     const split = reg[0].split('=');
-    const charset = split[1].replace(/\"/g, '');
+    const charset = split[1].replace(/"/g, '');
     this.object.charset = charset.toLowerCase();
   }
 
   getContentTypeEncoding() {
     const reg = this.body.match(/Content-Transfer-Encoding.*/);
     const split = reg[0].split(':');
-    const encoding = split[1].replace(/\"/g, '').trim();
+    const encoding = split[1].replace(/"/g, '').trim();
     this.object.encoding = encoding.toLowerCase();
   }
 }

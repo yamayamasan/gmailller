@@ -1,5 +1,6 @@
 const qs = require('querystring');
 const inbox = require('inbox');
+const co = require('co');
 
 const Mail = require(`${LIBS_DIR}/mail`);
 
@@ -30,14 +31,12 @@ class Gmail {
       client_id: 'clientId',
       client_secret: 'clientSecret',
     });
-
     const oauthInfo = Object.assign({}, {
       user,
       refreshToken: oauth.refresh_token,
       accessToken: oauth.access_token,
       timeout: oauth.expires_in,
     }, cOpts);
-
     return new Promise((resolve, reject) => {
       this.client = inbox.createConnection(false, 'imap.gmail.com', {
         secureConnection: true,
@@ -47,17 +46,15 @@ class Gmail {
       this.client.connect();
 
       this.client.on('connect', () => {
-        logger.info('connected');
         resolve({ result: true });
       });
 
       this.client.on('close', () => {
-        logger.info('disconnected');
         reject({ result: false });
       });
 
       this.client.on('error', (err) => {
-        logger.error(err, oauthInfo);
+        console.error(err, oauthInfo);
       });
     });
   }
@@ -93,25 +90,27 @@ class Gmail {
   }
 
   getMessage(uid) {
-    return (async function() {
-      let dbdata = await db.get('mails', { uid });
-      if (dbdata === null) {
-        const fetchData = await this.fetchMessage(uid);
-        dbdata = {
-          uid: uid,
-          subject: fetchData.subject,
-          text: fetchData.text,
-          html: fetchData.html,
-          content: fetchData.html || fetchData.text,
-          messageId: fetchData.messageId,
-          from: fetchData.from,
-          to: fetchData.to,
-          date: fetchData.date
+    return co(function*() {
+      const dbdata = yield db.get('mails', { uid });
+      if (dbdata) {
+        return dbdata;
+      } else {
+        const fetchData = yield this.fetchMessage(uid);
+        const inputs = {
+          "uid": uid,
+          "subject": fetchData.subject,
+          "text": fetchData.text,
+          "html": fetchData.html,
+          "content": fetchData.html || fetchData.text,
+          "messageId": fetchData.messageId,
+          "from": fetchData.from,
+          "to": fetchData.to,
+          "date": fetchData.date
         };
-        db.put('mails', dbdata);
+        db.put('mails', inputs);
+        return inputs;
       }
-      return dbdata;
-    }.bind(this)).call();
+    }.bind(this));
   }
 
   fetchMessage(uid) {
@@ -153,10 +152,10 @@ class Gmail {
     });
   }
 
-  observe(cb, path = 'INBOX') {
+  watcher(cb, path = 'INBOX') {
     this.client.openMailbox(path, (error, info) => {
       if (error) throw error;
-      this.client.on('new', (message) => {
+      this.client.on("new", (message) => {
         cb(message);
       });
     });

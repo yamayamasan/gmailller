@@ -1,5 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require('url');
+const _ = require('lodash');
+
+const Logger = require('./src/js/libs/logger');
+const logger = new Logger();
 
 const config = require('./config/app.json');
 
@@ -14,12 +18,12 @@ function createWindow() {
   }));
 
   win.on('closed', () => {
-    console.log('closed');
+    logger.log('closed');
     win = null;
   });
 
   win.on('resize', (a) => {
-    console.log('resized:', win.getSize());
+    logger.log('resized:', win.getSize());
   });
 }
 
@@ -38,7 +42,7 @@ app.on('activate', () => {
 });
 
 // resize
-ipcMain.on('window:resize:start', (event, arg) => {
+ipcMain.on('window:resize:start', (ev, arg) => {
   if (arg) {
     if (arg.height && arg.width) {
       win.setSize(arg.width, arg.height);
@@ -47,5 +51,40 @@ ipcMain.on('window:resize:start', (event, arg) => {
       win.setResizable(arg.resizable);
     }
   }
-  event.sender.send('window:resize:end', true);
+  ev.sender.send('window:resize:end', true);
+});
+
+// re:state
+const state = {
+  data: {},
+  get: function(key) {
+    return this.data[key];
+  },
+  set: function(key, val) {
+    this.data[key] = val;
+  },
+  has: function(key) {
+    return this.data[key] ? true : false;
+  },
+};
+
+ipcMain.on('state:init', (ev, arg) => {
+  _.forEach(arg, (val, key) => {
+    state.set(key, val);
+  });
+});
+
+ipcMain.on('state:set', (ev, arg) => {
+  const key = Object.keys(arg)[0];
+  state.set(key, arg[key]);
+
+  ev.sender.send('state:set:res', arg);
+});
+
+ipcMain.on('state:get', (ev, arg) => {
+  const key = arg.key;
+  const def = arg.def;
+  const data = state.has(key) ? state.get(key) : def;
+
+  ev.returnValue = data;
 });

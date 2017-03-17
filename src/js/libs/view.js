@@ -1,8 +1,9 @@
 class View {
 
-  constructor(params, _this_) {
+  constructor(params, _this_, fireInit = true) {
     this.params = params;
     this.context = _this_;
+    if (fireInit) this.init();
   }
 
   init() {

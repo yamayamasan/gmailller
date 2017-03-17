@@ -1,0 +1,16 @@
+{
+  "extends": "airbnb",
+  "globals": {
+    "document": true,
+    "$$": true,
+    "DIR": true,
+    "LIBS_DIR": true,
+    "state": true,
+    "localStorage": true,
+    "storage": true,
+    "_": true,
+    "Common": true,
+    "db": true,
+    "logger": true
+  }
+}
