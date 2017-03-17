@@ -1,0 +1,45 @@
+{
+  "schema": {
+    "version": 1,
+    "tables": [{
+      "table": "user",
+      "columns": {
+        "id": "++",
+        "isdefault": null,
+        "user": null,
+        "updated_at": null
+      }
+    }, {
+      "table": "mailboxes",
+      "columns": {
+        "id": "++",
+        "name": null,
+        "path": null,
+        "hasChildren": null,
+        "sort": null,
+        "updated_at": null
+      }
+    }, {
+      "table": "mails",
+      "columns": {
+        "uid": "&",
+        "subject": null,
+        "text": null,
+        "html": null,
+        "content": null,
+        "messageId": null,
+        "from": null,
+        "to": null,
+        "date": null
+      }
+    }, {
+      "table": "versions",
+      "columns": {
+        "id": "++",
+        "version": null,
+        "current": null,
+        "created_at": null
+      }
+    }]
+  }
+}
