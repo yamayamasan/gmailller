@@ -26,7 +26,7 @@ const LocalDb = require(`${LIBS_DIR}/localDb`);
 
 const state = new State();
 const storage = new Storage();
-const db = new LocalDb();
+const db = new LocalDb('mailer');
 
 /**
  * front

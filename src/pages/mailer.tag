@@ -22,15 +22,23 @@
           </ul>
         </nav>
         <div class="panel-body">
-          <div class="tile tile-centered" each={mail, i in view.listMails}>
-            <div class="tile-content" onclick={ openMail.bind(this, mail.UID) } data-uid={ mail.UID }>
-              <div class="tile-meta">{ mail.from.name }</div>
-              <div class="tile-meta"><time>{ helper.date(mail.date) }</time></div>
-              <div class="tile-title">{ mail.title }</div>
+          <div each={mail, i in view.listMails}>
+            <div class="tile tile-centered mail_{ mail.UID }">
+              <div class="tile-content" onclick={ openMail.bind(this, mail.UID) } data-uid={ mail.UID }>
+                <div class="tile-meta">{ mail.from.name }</div>
+                <div class="tile-meta"><time>{ helper.date(mail.date) }</time></div>
+                <div class="tile-title">{ mail.title }</div>
+              </div>
+              <div class="tile-action">
+                <button class="btn btn-link btn-action btn-lg"><i class="icon icon-mail_outline"></i></button>
+              </div>
             </div>
-            <div class="tile-action">
-              <button class="btn btn-link btn-action btn-lg"><i class="icon icon-mail_outline"></i></button>
+            <!-- mail contents-->
+            <div class="mail-contents__{ mail.UID }">
+
             </div>
+            <!-- //mail contents-->
+            <div class="divider"></div>
           </div>
         </div>
         <div class="panel-footer">
@@ -51,9 +59,11 @@
     helper = new Helper(this);
 
     // private
+    const {
+      ipcRenderer
+    } = require('electron');
     const co = require('co');
-    const iconv = require('iconv-lite');
-    // const jconv = require('jconv');
+    const mailContents = {};
     const gmail = Gmail.getInstance('main');
     const gmailAuth = state.get('gmail');
     const observars = {};
@@ -119,18 +129,15 @@
      *********************************/
     openMail(uid, e) {
       co(function*() {
-        const mail = yield gmail.fetchMessage(uid);
+        const mail = yield gmail.getMessage(uid);
         const div = document.createElement('div');
-        div.innerHTML = mail.html;
-        // console.log(jconv.convert(mail.html, 'ISO-2022-JP', 'UTF-8').toString());
-        // console.log(mail.html);
-        // console.log(mail.html);
-        // document.querySelector('#mail-content').appendChild(div);
-        document.querySelector('#mail-content').appendChild(div);
-        // console.log(mail);
-        // setViews({
-        //   content: mail.html
-        // });
+        div.setAttribute('id', `mail-content___${uid}`);
+        $$(`.mail-contents__${uid}`).appendChild(div);
+
+        mailContents[uid] = riot.mount(`#mail-content___${uid}`, 'mail-content', {
+          mail,
+          uid,
+        });
       });
     }
 
@@ -163,6 +170,7 @@
         const key = e.target.getAttribute('data-key');
         const mailbox = view.get('listMailboxes')[key];
         const listMails = yield getMailBox(mailbox, -10);
+        console.log('listMails', listMails);
         state.set('mailbox', mailbox);
         state.set('mailbox.from', -20);
         view.sets({
@@ -192,6 +200,12 @@
     this.on('mount', function() {
       setListmailboxes();
       observar('obs.INBOX');
+      $$('body').classList.remove('start_page');
+      ipcRenderer.send('window:resize:start', {
+        width: 800,
+        height: 600,
+        resizable: true,
+      });
     });
   </script>
 </mailer>

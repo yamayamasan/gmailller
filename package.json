@@ -1,6 +1,7 @@
 {
   "name": "mailer",
   "version": "0.0.1",
+  "node": "7.7.1",
   "main": "main.js",
   "license": "MIT",
   "scripts": {
@@ -14,20 +15,13 @@
     "eslint-config-airbnb": "^14.1.0",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^4.0.0",
-    "eslint-plugin-react": "^6.10.0",
-    "rollup": "^0.36.4",
-    "rollup-plugin-babel": "^2.6.1",
-    "rollup-plugin-commonjs": "^7.0.0",
-    "rollup-plugin-eslint": "^3.0.0",
-    "rollup-plugin-node-resolve": "^2.0.0",
-    "rollup-plugin-svelte": "^1.0.0",
-    "rollup-watch": "^2.5.0"
+    "eslint-plugin-react": "^6.10.0"
   },
   "dependencies": {
     "co": "^4.6.0",
     "curl": "^0.1.4",
     "dexie": "^1.5.1",
-    "iconv-lite": "^0.4.15",
+    "hjson": "^2.4.1",
     "inbox": "^1.1.59",
     "jconv": "^0.1.5",
     "lodash": "^4.17.4",

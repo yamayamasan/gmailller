@@ -1,5 +1,6 @@
 const qs = require('querystring');
 const inbox = require('inbox');
+const co = require('co');
 
 const Mail = require(`${LIBS_DIR}/mail`);
 
@@ -86,6 +87,30 @@ class Gmail {
         });
       });
     });
+  }
+
+  async getMessage(uid) {
+    return co(function*() {
+      const dbdata = yield db.get('mails', { uid });
+      if (dbdata) {
+        return dbdata;
+      } else {
+        const fetchData = yield this.fetchMessage(uid);
+        const inputs = {
+          "uid": uid,
+          "subject": fetchData.subject,
+          "text": fetchData.text,
+          "html": fetchData.html,
+          "content": fetchData.html || fetchData.text,
+          "messageId": fetchData.messageId,
+          "from": fetchData.from,
+          "to": fetchData.to,
+          "date": fetchData.date
+        };
+        db.put('mails', inputs);
+        return inputs;
+      }
+    }.bind(this));
   }
 
   fetchMessage(uid) {

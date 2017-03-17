@@ -19,9 +19,9 @@ class Mail {
     return new Promise((resolve, reject) => {
       simpleParser(this.body, (err, mail) => {
         if (err) reject(err);
-        console.log(mail);
+        // console.log(mail);
         mail.html = this.convertHTML(mail.html);
-        console.log(mail.html);
+        // console.log(mail);
         resolve(mail);
       });
     });

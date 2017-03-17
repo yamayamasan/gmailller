@@ -1,0 +1,7 @@
+{
+  default: {
+    width: 590,
+    height: 260,
+    resizable: false,
+  }
+}

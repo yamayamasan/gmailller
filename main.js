@@ -1,14 +1,12 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require('url');
 
-const config = {
-  windowSize: { width: 800, height: 600 },
-};
+const config = require('./config/app.json');
 
 let win = null;
 
 function createWindow() {
-  win = new BrowserWindow(config.windowSize);
+  win = new BrowserWindow(config.default);
   win.loadURL(url.format({
     pathname: `${__dirname}/src/index.html`,
     protocol: 'file:',
@@ -18,6 +16,10 @@ function createWindow() {
   win.on('closed', () => {
     console.log('closed');
     win = null;
+  });
+
+  win.on('resize', (a) => {
+    console.log('resized:', win.getSize());
   });
 }
 
@@ -33,4 +35,17 @@ app.on('activate', () => {
   if (win === null) {
     createWindow();
   }
+});
+
+// resize
+ipcMain.on('window:resize:start', (event, arg) => {
+  if (arg) {
+    if (arg.height && arg.width) {
+      win.setSize(arg.width, arg.height);
+    }
+    if (arg.resizable) {
+      win.setResizable(arg.resizable);
+    }
+  }
+  event.sender.send('window:resize:end', true);
 });

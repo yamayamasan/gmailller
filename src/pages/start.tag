@@ -1,21 +1,21 @@
 <start>
-  <!--<div class="column col-8 col-xs-12" if={ view.isViewLogin }>-->
-  <section class="empty">
-    <div class="empty-icon">
-      <i class="icon icon-drafts"></i>
-    </div>
-    <h4 class="empty-title">You've successfully signed up</h4>
-    <p class="empty-meta">Click the button to invite your friends</p>
-    <div class="empty-action">
-      <button class="btn btn-primary" onclick={ toAuthGmail }>Invite your friends</button>
-    </div>
-    <div class="empty-action">
-      <button class="btn btn-link">Skip</button>
-    </div>
-  </section>
-  <webview id="authview" class="column col-8 col-xs-12" src={ view.webviewSrc }></webview>
+  <div class="column col-12 col-xs-12" if={ view.isViewLogin }>
+    <section class="empty" if={ !view.showWebview }>
+      <div class="empty-icon">
+        <i class="icon icon-drafts"></i>
+      </div>
+      <h4 class="empty-title">You've successfully signed up</h4>
+      <p class="empty-meta">Click the button to invite your friends</p>
+      <div class="empty-action">
+        <button class="btn btn-primary" onclick={ toAuthGmail }>Invite your friends</button>
+      </div>
+      <div class="empty-action">
+        <button class="btn btn-link">Skip</button>
+      </div>
+    </section>
+    <webview id="authview" class="column col-12 col-xs-12" src={ view.webviewSrc } if={ view.showWebview }></webview>
   </div>
-  <!--<div if={ !view.isViewLogin }>Loding</div>-->
+  <div if={ !view.isViewLogin }>Loding</div>
   <script>
     const gmail = Gmail.getInstance('main');
     const gUrl = {
@@ -27,12 +27,14 @@
     const view = new View({
       isViewLogin: false,
       webviewSrc: null,
+      showWebview: false,
     }, this);
     view.init();
 
     toAuthGmail() {
       view.sets({
-        webviewSrc: gmail.authGmail()
+        webviewSrc: gmail.authGmail(),
+        showWebview: true,
       });
       webviewEvent();
     }
@@ -90,6 +92,10 @@
       if (auth) {
         await gmail.createConnection(auth.user, auth);
         toMailerPage();
+      } else {
+        view.sets({
+          isViewLogin: true,
+        });
       }
     }).call();
   </script>
