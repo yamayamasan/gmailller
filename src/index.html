@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Hello World!</title>
+  <link rel="stylesheet" href="../node_modules/spectre.css/dist/spectre.min.css" />
+  <link rel="stylesheet" href="../node_modules/spectre.css/dist/spectre-exp.min.css" />
+</head>
+
+<body>
+  <div id="main">
+    <div class="container">
+      <start></start>
+      <mailer></mailer>
+    </div>
+  </div>
+</body>
+
+
+<script src='../node_modules/riot/riot+compiler.min.js'></script>
+<script src='../node_modules/riot-route/dist/route.min.js'></script>
+<script src='js/app.js'></script>
+<script src="./tags/start.tag" type="riot/tag"></script>
+<script src="./tags/login.tag" type="riot/tag"></script>
+<script src="./tags/mailer.tag" type="riot/tag"></script>
+<script>
+  riot.mount('start');
+</script>
+
+</html>
