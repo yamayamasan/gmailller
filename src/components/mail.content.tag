@@ -18,7 +18,6 @@
       uid: null,
     }, this);
 
-    view.init();
     this.on('mount', function() {
       console.log(this);
       const mail = this.opts.mail;

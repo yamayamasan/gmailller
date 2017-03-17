@@ -62,10 +62,8 @@
     const {
       ipcRenderer
     } = require('electron');
-    const co = require('co');
     const mailContents = {};
     const gmail = Gmail.getInstance('main');
-    const gmailAuth = state.get('gmail');
     const observars = {};
     const view = new View({
       listMailboxes: [],
@@ -79,8 +77,6 @@
         all: false,
       }
     }, this);
-
-    view.init();
 
     /*********************************
      * できたら共通化
@@ -101,22 +97,18 @@
     /*********************************
      * プライベート
      *********************************/
-    function setListmailboxes() {
-      co(function*() {
-        const listMailboxes = yield gmail.listMailboxes();
-        view.sets({
-          listMailboxes
-        });
+    async function setListmailboxes() {
+      const listMailboxes = await gmail.listMailboxes();
+      view.sets({
+        listMailboxes
       });
     };
 
-    function getMailBox(mailbox, from) {
-      return co(function*() {
-        const orglistMails = view.get('listMails');
-        const addlistMails = yield gmail.listMessages(mailbox.path, from);
-        const rAddlistMails = _.reverse(addlistMails);
-        return orglistMails.concat(rAddlistMails);
-      });
+    async function getMailBox(mailbox, from) {
+      const orglistMails = view.get('listMails');
+      const addlistMails = await gmail.listMessages(mailbox.path, from);
+      const rAddlistMails = _.reverse(addlistMails);
+      return orglistMails.concat(rAddlistMails);
     }
 
 
@@ -128,8 +120,8 @@
      * view action
      *********************************/
     openMail(uid, e) {
-      co(function*() {
-        const mail = yield gmail.getMessage(uid);
+      (async function() {
+        const mail = await gmail.getMessage(uid);
         const div = document.createElement('div');
         div.setAttribute('id', `mail-content___${uid}`);
         $$(`.mail-contents__${uid}`).appendChild(div);
@@ -138,38 +130,37 @@
           mail,
           uid,
         });
-      });
+      }).call();
     }
 
     search() {
-      co(function*() {
+      (async function() {
         const mailbox = state.get('mailbox');
-        const listMails = yield gmail.search(mailbox.path, {
+        const listMails = await gmail.search(mailbox.path, {
           unseen: true
         });
-        console.log(listMails);
-      });
+      }).call();
     }
 
     moreMailBox() {
-      co(function*() {
+      (async function() {
         const mailbox = state.get('mailbox');
         const from = state.get('mailbox.from');
-        const listMails = yield getMailBox(mailbox, from);
+        const listMails = await getMailBox(mailbox, from);
         view.sets({
           listMails
         });
         state.set('mailbox.from', from - 10);
-      });
+      }).call();
     }
 
     openMailBox(e) {
-      co(function*() {
+      (async function() {
         e.preventDefault();
-        view.restore('listMails');
         const key = e.target.getAttribute('data-key');
+        view.restore('listMails');
         const mailbox = view.get('listMailboxes')[key];
-        const listMails = yield getMailBox(mailbox, -10);
+        const listMails = await getMailBox(mailbox, -10);
         console.log('listMails', listMails);
         state.set('mailbox', mailbox);
         state.set('mailbox.from', -20);
@@ -178,30 +169,26 @@
           mailboxLabel: mailbox.name,
           listMails
         });
-      });
+      }).call();
     }
 
-    const toast = (message) => {
-
-    };
-
-    const observar = (name) => {
-      co(function*() {
+    const observer = (name) => {
+      (async function() {
         observars[name] = Gmail.getInstance(name);
         const auth = storage.get('gmail');
-        yield observars[name].createConnection(auth.user, auth);
-        observars[name].watcher((message) => {
+        await observars[name].createConnection(auth.user, auth);
+        observars[name].observe((message) => {
           console.log(message);
-          toast(message);
+          // toast(message);
         });
-      });
+      }).call();
     }
 
     this.on('mount', function() {
       setListmailboxes();
-      observar('obs.INBOX');
+      observer('obs.INBOX');
       $$('body').classList.remove('start_page');
-      ipcRenderer.send('window:resize:start', {
+      communicator.send('window:resize:start', {
         width: 800,
         height: 600,
         resizable: true,
