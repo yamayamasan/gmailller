@@ -8,14 +8,19 @@ const CONF_DIR = `${DIR}/../config`;
 /**
  * config
  */
-const dbSchema = require(`${CONF_DIR}/db.schemas.json`);
+// const dbSchemas = [];
+// require('fs').readdirSync(`${CONF_DIR}/db`, (e, files) => {
+//   files.forEach((file) => {
+//     const version = file.split('.')[1];
+//     dbSchemas.push(require(`${CONF_DIR}/db/${file}`));
+//   });
+// });
 
 /**
  * Npm
  */
 const _ = require('lodash');
 const moment = require('moment');
-const State = require(`${LIBS_DIR}/state`);
 const ReState = require(`${LIBS_DIR}/re.state`);
 const Storage = require(`${LIBS_DIR}/storage`);
 const Gmail = require(`${LIBS_DIR}/singlegmail`);
@@ -26,6 +31,7 @@ const View = require(`${LIBS_DIR}/view`);
 const LocalDb = require(`${LIBS_DIR}/localDb`);
 const Communicator = require(`${LIBS_DIR}/communicator`);
 const Logger = require(`${LIBS_DIR}/logger`);
+const Notice = require(`${LIBS_DIR}/notice`);
 
 const communicator = new Communicator();
 const state = new ReState(communicator);
@@ -40,4 +46,11 @@ const $$ = (e) => {
   return document.querySelector(e);
 };
 
-db.init(dbSchema.schema);
+const dbSchemas = [];
+require('fs').readdir(`${CONF_DIR}/db`, (e, files) => {
+  files.forEach((file) => {
+    const version = file.split('.')[1];
+    dbSchemas.push(require(`${CONF_DIR}/db/${file}`));
+  });
+  db.init(dbSchemas);
+});

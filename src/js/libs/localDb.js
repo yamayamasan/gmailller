@@ -8,12 +8,13 @@ class LocalDb {
     this.table = null;
   }
 
-  init(schemas) {
-    const schema = this.parseSchema(schemas);
-    console.log('[DB schema]:', schema);
-    this.db.version(schema.version).stores(schema.tables);
+  init(dbschemas) {
+    dbschemas.forEach((dbschema) => {
+      const schema = this.parseSchema(dbschema.schema);
+      console.log('[DB schema]:', schema);
+      this.db.version(schema.version).stores(schema.tables);
+    });
     this.db.open();
-    console.log(this.db.tables);
   }
 
   d(tblname) {

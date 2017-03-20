@@ -1,7 +1,7 @@
 {
   "default": {
     "width": 590,
-    "height": 260,
-    "resizable": false
+    "height": 420,
+    "resizable": true
   }
 }

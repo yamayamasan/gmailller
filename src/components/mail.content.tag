@@ -2,7 +2,7 @@
   <div class="card">
     <div class="card-header">
       <h4 class="card-title">{ view.subject }</h4>
-      <h6 class="card-meta">Software and hardware</h6>
+      <h6 class="card-meta"></h6>
     </div>
     <div class="card-body" id="body_{ view.uid }">
 

@@ -19,13 +19,12 @@ class Mail {
     return new Promise((resolve, reject) => {
       simpleParser(this.body, (err, mail) => {
         if (err) reject(err);
-        const copy = _.cloneDeep(mail);
         if (mail.html) {
-          copy.html = this.convertText(mail.html);
-          copy.content = mail.html;
+          mail.html = this.convertText(mail.html);
+          mail.content = mail.html;
         } else {
-          copy.text = this.convertText(mail.text);
-          copy.content = mail.text;
+          mail.text = this.convertText(mail.text);
+          mail.content = mail.text;
         }
         // console.log(mail);
         resolve(mail);
@@ -34,14 +33,13 @@ class Mail {
   }
 
   convertText(text) {
-    let trans = null;
+    let trans = text;
     const object = Object.assign({}, this.object);
     this.object = {};
     if (object.charset === 'iso-2022-jp' &&
       object.encoding === 'quoted-printable') {
+      console.log('p');
       trans = jconv.convert(text, 'ISO-2022-JP', 'UTF-8').toString();
-    } else {
-      trans = text;
     }
     return trans;
   }
