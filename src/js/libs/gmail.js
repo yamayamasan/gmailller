@@ -10,12 +10,24 @@ const config = {
 
 class Gmail {
 
+  /**
+   * Creates an instance of Gmail.
+   * 
+   * @memberOf Gmail
+   */
   constructor() {
     this.client = null;
     this.config = config;
     this.oauth = {};
   }
 
+  /**
+   * get authGmail url
+   * 
+   * @returns auth gmail
+   * 
+   * @memberOf Gmail
+   */
   authGmail() {
     const opts = Common.getPackObject(this.config.gmail, ['scope', 'response_type', 'approval_prompt', 'access_type']);
     const conf = Object.assign({
@@ -26,6 +38,14 @@ class Gmail {
     return `${config.client.auth_uri}?${query}`;
   }
 
+  /**
+   * set oauth configs
+   * 
+   * @param {object} user  
+   * @param {object} oauth 
+   * 
+   * @memberOf Gmail
+   */
   setOauthConfig(user, oauth) {
     const cOpts = Common.getPackObject(this.config.client, {
       client_id: 'clientId',
@@ -39,6 +59,13 @@ class Gmail {
     }, cOpts);
   }
 
+  /**
+   * create connection to gmail
+   * 
+   * @returns 
+   * 
+   * @memberOf Gmail
+   */
   createConnection() {
     return new Promise((resolve, reject) => {
       this.client = inbox.createConnection(false, 'imap.gmail.com', {
@@ -64,6 +91,13 @@ class Gmail {
     });
   }
 
+  /**
+   * get list mailbox
+   * 
+   * @returns 
+   * 
+   * @memberOf Gmail
+   */
   listMailboxes() {
     return new Promise((resolve, reject) => {
       this.client.listMailboxes((err, mailboxes) => {
@@ -73,6 +107,14 @@ class Gmail {
     });
   }
 
+  /**
+   * open mailbox
+   * 
+   * @param {any} path 
+   * @returns 
+   * 
+   * @memberOf Gmail
+   */
   openMailBox(path) {
     return new Promise((resolve, reject) => {
       this.client.openMailbox(path, (err, info) => {
@@ -82,6 +124,16 @@ class Gmail {
     });
   }
 
+  /**
+   * get list messages
+   * 
+   * @param {string} path 
+   * @param {number} [f=-10] 
+   * @param {number} [limit=10] 
+   * @returns 
+   * 
+   * @memberOf Gmail
+   */
   listMessages(path, f = -10, limit = 10) {
     return new Promise((resolve, reject) => {
       this.client.openMailbox(path, (err0, info) => {
@@ -99,7 +151,7 @@ class Gmail {
   }
 
   getMessage(uid) {
-    return (async function () {
+    return (async function() {
       let dbdata = await db.get('mails', { uid });
       if (dbdata === null) {
         const fetchData = await this.fetchMessage(uid);
@@ -139,16 +191,21 @@ class Gmail {
   }
 
   countUnRead(path) {
-    return new Promise(async (resolve) => {
+    return new Promise(async(resolve) => {
       const searched = await this.search(path, { unseen: true });
       resolve(searched.length);
     });
   }
-  // addFlags() {
-  //   return new Promise((resolve) => {
 
-  //   });
-  // }
+  addFlags(uid, flags) {
+    return new Promise((resolve, reject) => {
+      this.client.addFlags(uid, flags, (err, info) => {
+        if (err) reject(err);
+        resolve(info);
+      });
+    });
+  }
+
   /**
    * flags Seen -> 既読
    * @param {*} from 
@@ -158,10 +215,7 @@ class Gmail {
     return new Promise((resolve) => {
       this.client.openMailbox('INBOX', (error, info) => {
         this.client.listFlags(from, limit, (err, messages) => {
-          messages.forEach((message) => {
-            console.log(message.UID, message);
-            resolve(message);
-          });
+          resolve(messages);
         });
       });
     });
@@ -209,9 +263,7 @@ class Gmail {
 
     let r = false;
     msg.flags.forEach((flag) => {
-      if (!r) {
-        r = flag.match(/Seen/).index > 0;
-      }
+      if (!r) r = flag.match(/Seen/).index > 0;
     });
     return r;
   }
