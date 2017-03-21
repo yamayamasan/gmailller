@@ -13,6 +13,7 @@ class Gmail {
   constructor() {
     this.client = null;
     this.config = config;
+    this.oauth = {};
   }
 
   authGmail() {
@@ -25,23 +26,24 @@ class Gmail {
     return `${config.client.auth_uri}?${query}`;
   }
 
-  createConnection(user, oauth) {
+  setOauthConfig(user, oauth) {
     const cOpts = Common.getPackObject(this.config.client, {
       client_id: 'clientId',
       client_secret: 'clientSecret',
     });
-
-    const oauthInfo = Object.assign({}, {
+    this.oauth = Object.assign({}, {
       user,
       refreshToken: oauth.refresh_token,
       accessToken: oauth.access_token,
       timeout: oauth.expires_in,
     }, cOpts);
+  }
 
+  createConnection() {
     return new Promise((resolve, reject) => {
       this.client = inbox.createConnection(false, 'imap.gmail.com', {
         secureConnection: true,
-        auth: { XOAuth2: oauthInfo },
+        auth: { XOAuth2: this.oauth },
         // debug: true,
       });
       this.client.connect();
@@ -57,7 +59,7 @@ class Gmail {
       });
 
       this.client.on('error', (err) => {
-        logger.error(err, oauthInfo);
+        logger.error(err, this.oauth);
       });
     });
   }
@@ -86,14 +88,18 @@ class Gmail {
         if (err0) throw reject(err0);
         this.client.listMessages(f, limit, (err1, messages) => {
           if (err1) throw reject(err1);
-          resolve(messages);
+          const msgs = messages.map((message) => {
+            message.read = Gmail.isRead(message);
+            return message;
+          });
+          resolve(msgs);
         });
       });
     });
   }
 
   getMessage(uid) {
-    return (async function() {
+    return (async function () {
       let dbdata = await db.get('mails', { uid });
       if (dbdata === null) {
         const fetchData = await this.fetchMessage(uid);
@@ -106,7 +112,8 @@ class Gmail {
           messageId: fetchData.messageId,
           from: fetchData.from,
           to: fetchData.to,
-          date: fetchData.date
+          date: fetchData.date,
+          read: true,
         };
         db.put('mails', dbdata);
       }
@@ -126,6 +133,35 @@ class Gmail {
         const mail = new Mail();
         mail.bodyParse(body).then((content) => {
           resolve(content);
+        });
+      });
+    });
+  }
+
+  countUnRead(path) {
+    return new Promise(async (resolve) => {
+      const searched = await this.search(path, { unseen: true });
+      resolve(searched.length);
+    });
+  }
+  // addFlags() {
+  //   return new Promise((resolve) => {
+
+  //   });
+  // }
+  /**
+   * flags Seen -> 既読
+   * @param {*} from 
+   * @param {*} limit 
+   */
+  listFlags(from, limit = 10) {
+    return new Promise((resolve) => {
+      this.client.openMailbox('INBOX', (error, info) => {
+        this.client.listFlags(from, limit, (err, messages) => {
+          messages.forEach((message) => {
+            console.log(message.UID, message);
+            resolve(message);
+          });
         });
       });
     });
@@ -160,6 +196,24 @@ class Gmail {
         cb(message);
       });
     });
+  }
+
+  disconnected(cb) {
+    this.client.on('close', () => {
+      cb();
+    });
+  }
+
+  static isRead(msg) {
+    if (msg.flags.length === 0) return false;
+
+    let r = false;
+    msg.flags.forEach((flag) => {
+      if (!r) {
+        r = flag.match(/Seen/).index > 0;
+      }
+    });
+    return r;
   }
 }
 

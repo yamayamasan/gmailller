@@ -44,8 +44,13 @@ app.on('activate', () => {
 // resize
 ipcMain.on('window:resize:start', (ev, arg) => {
   if (arg) {
+    const currentSize = win.getSize();
     if (arg.height && arg.width) {
-      win.setSize(arg.width, arg.height);
+      // if ((arg.height !== currentSize[1]) || (arg.width !== currentSize[0])) {
+      //   win.setSize(currentSize[0], currentSize[1]);
+      // } else {
+        win.setSize(arg.width, arg.height);
+      // }
     }
     if (arg.resizable) {
       win.setResizable(arg.resizable);
@@ -58,13 +63,13 @@ ipcMain.on('window:resize:start', (ev, arg) => {
 const state = {
   data: {},
   get: function(key) {
-    return this.data[key];
+    return _.get(this.data, key);
   },
   set: function(key, val) {
-    this.data[key] = val;
+    _.set(this.data, key, val);
   },
   has: function(key) {
-    return this.data[key] ? true : false;
+    return _.has(this.data, key);
   },
 };
 
