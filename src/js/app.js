@@ -6,17 +6,6 @@ const LIBS_DIR = `${DIR}/js/libs`;
 const CONF_DIR = `${DIR}/../config`;
 
 /**
- * config
- */
-// const dbSchemas = [];
-// require('fs').readdirSync(`${CONF_DIR}/db`, (e, files) => {
-//   files.forEach((file) => {
-//     const version = file.split('.')[1];
-//     dbSchemas.push(require(`${CONF_DIR}/db/${file}`));
-//   });
-// });
-
-/**
  * Npm
  */
 const _ = require('lodash');
@@ -46,11 +35,16 @@ const $$ = (e) => {
   return document.querySelector(e);
 };
 
+
+/**
+ * config
+ */
 const dbSchemas = [];
 require('fs').readdir(`${CONF_DIR}/db`, (e, files) => {
   files.forEach((file) => {
     const version = file.split('.')[1];
     dbSchemas.push(require(`${CONF_DIR}/db/${file}`));
   });
+  console.log(dbSchemas);
   db.init(dbSchemas);
 });
