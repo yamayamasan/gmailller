@@ -19,6 +19,7 @@ class View {
     _.forEach(values, (val, key) => {
       this.context.view[key] = val;
     });
+    console.log('this.context', this);
     this.context.update();
   }
 

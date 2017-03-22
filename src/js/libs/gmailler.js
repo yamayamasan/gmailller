@@ -4,6 +4,10 @@ class Gmailler {
     this.comm = communicator;
   }
 
+  authGmailSync() {
+    return this.sendSync('authGmail');
+  }
+
   connection(key, params, cb = null) {
     this.send('connection', key, params);
     if (cb !== null) {
@@ -101,7 +105,7 @@ class Gmailler {
     });
   }
 
-  sendSync(action, key, params) {
+  sendSync(action, key = null, params = null) {
     return this.comm.sendSync(`gmail:${action}.sync`, {
       key,
       params,

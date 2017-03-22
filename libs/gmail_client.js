@@ -26,6 +26,11 @@ class GmailClient {
   }
 
   actions() {
+    this.ipcon('authGmail.sync', async(ev) => {
+      const tmp = new Gmail();
+      ev.returnValue = tmp.authGmail();
+    });
+
     this.ipcon('connection', async(ev, key, params) => {
       await this.connect(key, params);
       this.send(ev, 'connection', key);
@@ -67,6 +72,19 @@ class GmailClient {
       const res = orglistMails.concat(rAddlistMails);
       this.cache['mailboxes'] = res;
       ev.returnValue = res;
+    });
+
+    this.ipcon('getMailbox', async(ev, key, params) => {
+      const orglistMails = params.listMails;
+      const mailbox = params.mailbox;
+      const from = params.from;
+
+      const addlistMails = await this.instance.main.listMessages(mailbox.path, from);
+      const rAddlistMails = _.reverse(addlistMails);
+      const res = orglistMails.concat(rAddlistMails);
+
+      // this.cache['mailboxes'] = res;
+      this.send(ev, 'getMailbox', res);
     });
 
     this.ipcon('readMail', async(ev, key, params) => {

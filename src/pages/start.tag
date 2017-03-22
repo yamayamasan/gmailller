@@ -1,5 +1,4 @@
 <start>
-
   <webview id="authview" class="column col-12 col-xs-12" src={ view.webviewSrc } if={ view.showWebview }></webview>
   <div class="column col-12 col-xs-12 docs-content height100per" if={ view.isViewLogin }>
     <section class="empty" if={ !view.showWebview }>
@@ -11,9 +10,6 @@
       <div class="empty-action">
         <button class="btn btn-primary" onclick={ toAuthGmail }>Login</button>
       </div>
-      <!--<div class="empty-action">
-        <button class="btn btn-link">Skip</button>
-      </div>-->
     </section>
   </div>
   <div if={ !view.isViewLogin }>
@@ -43,7 +39,7 @@
 
     toAuthGmail() {
       view.sets({
-        webviewSrc: gmail.authGmail(),
+        webviewSrc: gmailler.authGmailSync(),
         showWebview: true,
       });
       webviewEvent();
@@ -77,16 +73,20 @@
     const getToken = async(code, authview) => {
       authview.setAttribute('src', null);
       try {
-        const res = await Curl.request(code);
-        gmail.setOauthConfig(email, res);
-        const auth = await gmail.createConnection();
-        if (auth.result) {
-          const keys = Common.getPackObject(res, ['refresh_token', 'access_token', 'expires_in']);
+        const auth = await Curl.request(code);
+        auth.user = email;
+        const params = {
+          auth
+        };
+        gmailler.connection('main', params, () => {
+          gmailler.listMailboxes('listMailboxes', params);
+          gmailler.unreadlistMailboxes('unreadlistMailboxes', params);
+          const keys = Common.getPackObject(auth, ['refresh_token', 'access_token', 'expires_in']);
           storage.save('gmail', Object.assign({
             user: email,
           }, keys));
           toMailerPage();
-        }
+        });
       } catch (e) {
         console.err('start:', e);
       }

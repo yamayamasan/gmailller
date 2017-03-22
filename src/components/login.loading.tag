@@ -3,8 +3,7 @@
     <div class="bottle-wrap">
       <div class="cap"><i></i><i></i><i></i><i></i></div>
       <div class="bottle">
-        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="26.81px"
-          height="106.124px" viewBox="0 0.5 26.81 106.124" enable-background="new 0 0.5 26.81 106.124" xml:space="preserve">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="26.81px" height="106.124px" viewBox="0 0.5 26.81 106.124" enable-background="new 0 0.5 26.81 106.124" xml:space="preserve">
           <defs>
             <pattern id="water_fill" width=".25" height="1.1" patternContentUnits="objectBoundingBox">
               <path fill="#FBCE13" d="M0.25,1H0c0,0,0-0.659,0-0.916c0.083-0.303,0.158,0.334,0.25,0C0.25,0.327,0.25,1,0.25,1z" />
@@ -24,8 +23,7 @@
         </svg>
       </div>
       <div class="bottle">
-        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="32.339px"
-          height="105.586px" viewBox="0 0 32.339 105.586" enable-background="new 0 0 32.339 105.586" xml:space="preserve">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="32.339px" height="105.586px" viewBox="0 0 32.339 105.586" enable-background="new 0 0 32.339 105.586" xml:space="preserve">
           <defs>
             <pattern id="water_fill" width=".25" height="1.1" patternContentUnits="objectBoundingBox">
               <path fill="#FBCE13" d="M0.25,1H0c0,0,0-0.659,0-0.916c0.083-0.303,0.158,0.334,0.25,0C0.25,0.327,0.25,1,0.25,1z" />
@@ -49,8 +47,7 @@
         </svg>
       </div>
       <div class="bottle">
-        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="31.314px"
-          height="102.629px" viewBox="0 0 31.314 102.629" enable-background="new 0 0 31.314 102.629" xml:space="preserve">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="31.314px" height="102.629px" viewBox="0 0 31.314 102.629" enable-background="new 0 0 31.314 102.629" xml:space="preserve">
           <defs>
             <pattern id="water_fill" width=".25" height="1.1" patternContentUnits="objectBoundingBox">
               <path fill="#FBCE13" d="M0.25,1H0c0,0,0-0.659,0-0.916c0.083-0.303,0.158,0.334,0.25,0C0.25,0.327,0.25,1,0.25,1z" />
@@ -71,8 +68,7 @@
         </svg>
       </div>
       <div class="bottle">
-        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="27.071px"
-          height="100.378px" viewBox="0 0 27.071 100.378" enable-background="new 0 0 27.071 100.378" xml:space="preserve">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="27.071px" height="100.378px" viewBox="0 0 27.071 100.378" enable-background="new 0 0 27.071 100.378" xml:space="preserve">
           <defs>
             <pattern id="water_fill" width=".25" height="1.1" patternContentUnits="objectBoundingBox">
               <path fill="#FBCE13" d="M0.25,1H0c0,0,0-0.659,0-0.916c0.083-0.303,0.158,0.334,0.25,0C0.25,0.327,0.25,1,0.25,1z" />
@@ -108,8 +104,8 @@
     }
     
     *,
-    :after,
-    :before {
+     :after,
+     :before {
       box-sizing: border-box
     }
     
