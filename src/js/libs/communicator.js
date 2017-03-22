@@ -19,7 +19,7 @@ class Communicator {
     if (!isOnce) {
       this.comt.on(eventName, cb);
     } else {
-      this.once(eventName, cb);
+      this.comt.once(eventName, cb);
     }
   }
 

@@ -49,7 +49,7 @@ ipcMain.on('window:resize:start', (ev, arg) => {
       // if ((arg.height !== currentSize[1]) || (arg.width !== currentSize[0])) {
       //   win.setSize(currentSize[0], currentSize[1]);
       // } else {
-        win.setSize(arg.width, arg.height);
+      win.setSize(arg.width, arg.height);
       // }
     }
     if (arg.resizable) {
@@ -59,37 +59,14 @@ ipcMain.on('window:resize:start', (ev, arg) => {
   ev.sender.send('window:resize:end', true);
 });
 
-// re:state
-const state = {
-  data: {},
-  get: function(key) {
-    return _.get(this.data, key);
-  },
-  set: function(key, val) {
-    _.set(this.data, key, val);
-  },
-  has: function(key) {
-    return _.has(this.data, key);
-  },
-};
+// loki
+const Loki = require('./libs/lokiDb');
+const loki = new Loki('./lokidb/db.json', ['user', 'mailboxes', 'mails']);
 
-ipcMain.on('state:init', (ev, arg) => {
-  _.forEach(arg, (val, key) => {
-    state.set(key, val);
-  });
-});
+// gmail
+const GmailClient = require('./libs/gmail_client');
+const gmailclient = new GmailClient(ipcMain, loki);
 
-ipcMain.on('state:set', (ev, arg) => {
-  const key = Object.keys(arg)[0];
-  state.set(key, arg[key]);
-
-  ev.sender.send('state:set:res', arg);
-});
-
-ipcMain.on('state:get', (ev, arg) => {
-  const key = arg.key;
-  const def = arg.def;
-  const data = state.has(key) ? state.get(key) : def;
-
-  ev.returnValue = data;
-});
+// state
+const State = require('./libs/state');
+const state = new State(ipcMain);

@@ -16,6 +16,7 @@ class Helper {
   date(org, fmt = 'YYYY/MM/DD HH:mm') {
     return moment(org).format(fmt);
   }
+
 }
 
 module.exports = Helper;

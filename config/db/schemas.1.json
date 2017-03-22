@@ -1,6 +1,6 @@
 {
   "schema": {
-    "version": 1,
+    "version": 3,
     "tables": [{
       "table": "user",
       "columns": {
@@ -12,11 +12,13 @@
     }, {
       "table": "mailboxes",
       "columns": {
-        "id": "++",
+        "uuid": "&",
         "name": null,
         "path": null,
         "hasChildren": null,
+        "unreadCount": null,
         "sort": null,
+        "delimiter": null,
         "updated_at": null
       }
     }, {
@@ -30,7 +32,8 @@
         "messageId": null,
         "from": null,
         "to": null,
-        "date": null
+        "date": null,
+        "read": null
       }
     }, {
       "table": "versions",

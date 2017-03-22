@@ -30,6 +30,10 @@ class LocalDb {
     });
   }
 
+  bulkPut(tblname, params) {
+    return this.db[tblname].bulkPut(params);
+  }
+
   add(tblname, params) {
     return this.db[tblname].add(params);
   }

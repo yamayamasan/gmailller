@@ -28,87 +28,93 @@
     }
   </style>
   <script>
-      const gmail = Gmail.getInstance('main');
-      const gUrl = {
-        auth: 'https://accounts.google.com/o/oauth2/auth',
-        approval: 'https://accounts.google.com/o/oauth2/approval',
-      };
-      let email = null;
+    const gmail = Gmail.getInstance('main');
+    const gUrl = {
+      auth: 'https://accounts.google.com/o/oauth2/auth',
+      approval: 'https://accounts.google.com/o/oauth2/approval',
+    };
+    let email = null;
 
-      const view = new View({
-        isViewLogin: false,
-        webviewSrc: null,
-        showWebview: false,
-      }, this);
+    const view = new View({
+      isViewLogin: false,
+      webviewSrc: null,
+      showWebview: false,
+    }, this);
 
-      toAuthGmail() {
-        view.sets({
-          webviewSrc: gmail.authGmail(),
-          showWebview: true,
-        });
-        webviewEvent();
-      }
+    toAuthGmail() {
+      view.sets({
+        webviewSrc: gmail.authGmail(),
+        showWebview: true,
+      });
+      webviewEvent();
+    }
 
-      const webviewEvent = () => {
-        const authview = $$('#authview');
-        authview.addEventListener('load-commit', (e) => {
-          authview.addEventListener('did-finish-load', () => {
-            if (e.url.match(gUrl.approval)) {
-              authview.executeJavaScript("{ code: document.querySelector('#code').value}",
-                (res) => {
-                  getToken(res, authview);
-                }
-              );
-            } else if (e.url.match(gUrl.auth)) {
-              authview.executeJavaScript("{ code: document.querySelector('div.gb_xb').innerText}",
-                (res) => {
-                  getEmail(res);
-                }
-              );
-            }
-          });
-        });
-      }
-
-      const getEmail = (res) => {
-        email = res;
-      }
-
-      const getToken = async (code, authview) => {
-        authview.setAttribute('src', null);
-        try {
-          const res = await Curl.request(code);
-          gmail.setOauthConfig(email, res);
-          const auth = await gmail.createConnection();
-          if (auth.result) {
-            const keys = Common.getPackObject(res, ['refresh_token', 'access_token', 'expires_in']);
-            storage.save('gmail', Object.assign({
-              user: email,
-            }, keys));
-            toMailerPage();
+    const webviewEvent = () => {
+      const authview = $$('#authview');
+      authview.addEventListener('load-commit', (e) => {
+        authview.addEventListener('did-finish-load', () => {
+          if (e.url.match(gUrl.approval)) {
+            authview.executeJavaScript("{ code: document.querySelector('#code').value}",
+              (res) => {
+                getToken(res, authview);
+              }
+            );
+          } else if (e.url.match(gUrl.auth)) {
+            authview.executeJavaScript("{ code: document.querySelector('div.gb_xb').innerText}",
+              (res) => {
+                getEmail(res);
+              }
+            );
           }
-        } catch (e) {
-          console.err('start:', e);
-        }
-      };
+        });
+      });
+    }
 
-      const toMailerPage = () => {
-        riot.mount('mailer');
-        this.unmount(true);
-      }
+    const getEmail = (res) => {
+      email = res;
+    }
 
-      // init call
-      (async function isAuthed() {
-        const auth = storage.get('gmail');
-        if (auth) {
-          gmail.setOauthConfig(auth.user, auth);
-          await gmail.createConnection();
+    const getToken = async(code, authview) => {
+      authview.setAttribute('src', null);
+      try {
+        const res = await Curl.request(code);
+        gmail.setOauthConfig(email, res);
+        const auth = await gmail.createConnection();
+        if (auth.result) {
+          const keys = Common.getPackObject(res, ['refresh_token', 'access_token', 'expires_in']);
+          storage.save('gmail', Object.assign({
+            user: email,
+          }, keys));
           toMailerPage();
-        } else {
-          view.sets({
-            isViewLogin: true,
-          });
         }
-      }).call();
+      } catch (e) {
+        console.err('start:', e);
+      }
+    };
+
+    const toMailerPage = () => {
+      riot.mount('mailer');
+      this.unmount(true);
+    }
+
+    // init call
+    (async function isAuthed() {
+      const auth = storage.get('gmail');
+      if (auth) {
+        const params = {
+          auth
+        };
+        gmailler.connection('main', params);
+        gmailler.listMailboxes('listMailboxes', params);
+        gmailler.unreadlistMailboxes('unreadlistMailboxes', params);
+        gmailler.onConnection((key) => {
+          toMailerPage();
+        });
+      } else {
+        view.sets({
+          isViewLogin: true,
+        });
+      }
+    }).call();
   </script>
 </start>

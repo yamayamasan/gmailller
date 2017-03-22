@@ -4,9 +4,8 @@
       <ul class="nav">
         <li class="nav-item" each={mailbox, i in view.listMailboxes}>
           <a href="#" onclick={ openMailBox.bind(this, i) }>
-            <!--<span class={ view.selectedMailBox.list[i] }   class="badge" data-badge="{mailbox.unreadCount}" if={ mailbox.unreadCount > 0 }>{ mailbox.name }</span>
-            <span class={ view.selectedMailBox.list[i] } if={ mailbox.unreadCount == 0 }>{ mailbox.name }</span>-->
-            <span class={ view.selectedMailBox.list[i] }>{ mailbox.name }</span>
+            <!-- 一旦[i]で（本当はuidみたいなのでやりたい） -->
+            <span id="mailbox_span_{ i }" class={ view.selectedMailBox.list[i] }>{ mailbox.name }</span>
           </a>
         </li>
       </ul>
@@ -72,8 +71,6 @@
       ipcRenderer
     } = require('electron');
     const mailContents = {};
-    const gmail = Gmail.getInstance('main');
-    const observars = {};
     const view = new View({
       listMailboxes: [],
       listMails: [],
@@ -100,6 +97,7 @@
         list: [],
         from: null,
       },
+      listMailboxes: {},
     });
 
     /*********************************
@@ -121,33 +119,85 @@
     /*********************************
      * プライベート
      *********************************/
-    async function setListmailboxes() {
-      const listMailboxes = await gmail.listMailboxes();
-
-      const selectedMailBox = view.get('selectedMailBox');
-      for (let i = 0; i < listMailboxes.length; i++) {
-        const mail = listMailboxes[i];
-
-        // if (mail.name.match(/Mailbox|Gmail|Airmail/) == null) {
-        //   const count = await gmail.countUnRead(mail.path);
-        //   mail.unreadCount = count;
-        // }
-
-        selectedMailBox.list[mail.path] = null;
-      }
-      view.sets({
-        listMailboxes,
-        selectedMailBox
+    function reconnect() {
+      /*
+      const auth = storage.get('gmail');
+      communicator.send('gmail:disconnected', {
+        key: 'main',
+        params: {
+          auth,
+        }
       });
-    };
+      communicator.on('gmail:disconnected:res', (ev, disconnected) => {
+        communicator.send('gmail:connection', {
+          key: 'main',
+          params: {
+            auth,
+          }
+        });
 
-    async function getMailBox(mailbox, from) {
-      const orglistMails = view.get('listMails');
-      const addlistMails = await gmail.listMessages(mailbox.path, from);
-      const rAddlistMails = _.reverse(addlistMails);
-      return orglistMails.concat(rAddlistMails);
+        communicator.on('gmail:connection:res', (e, key) => {
+          reconnect();
+        });
+      });
+      */
     }
 
+    function diffListMailboxes(curListMailboxes) {
+      const oldListMailboxes = state.get('listMailboxes');
+      const newListMailboxes = {};
+      _.forEach(curListMailboxes, (mailbox, i) => {
+        if (!oldListMailboxes[mailbox.uuid]) {
+          // oldがなければnewに突っ込む
+          newListMailboxes[mailbox.uuid] = mailbox;
+        } else {
+          // oldがあれば比較
+          if (oldListMailboxes[mailbox.uuid].unreadCount !== mailbox.unreadCount) {
+            // 未読数に差がある
+            newListMailboxes[mailbox.uuid] = mailbox;
+          }
+        }
+      });
+      return newListMailboxes;
+    }
+
+    async function setViewDb() {
+      const mailboxes = await db.all('mailboxes');
+      const hashMailboxes = _.mapKeys(mailboxes, (mailbox) => {
+        return mailbox.uuid;
+      });
+      // const mearge = diffListMailboxes(hashMailboxes);
+      state.set('listMailboxes', hashMailboxes);
+    }
+
+    function setViewInit() {
+      gmailler.onListMailboxes((listMailboxes) => {
+        const selectedMailBox = view.get('selectedMailBox');
+        listMailboxes.forEach((mail) => {
+          selectedMailBox.list[mail.path] = null;
+        });
+        view.sets({
+          listMailboxes,
+          selectedMailBox
+        });
+      });
+      gmailler.onUnreadlistMailboxes((listMailboxes) => {
+        listMailboxes.forEach((mailbox, i) => {
+          if (mailbox.unreadCount > 0) {
+            // 一旦[i]で（本当はuidみたいなのでやりたい）
+            // const ele = document.querySelector(`#mailbox_span_${ mailbox.path }`);
+            const ele = document.querySelector(`#mailbox_span_${ i }`);
+            ele.setAttribute('data-badge', mailbox.unreadCount);
+            ele.classList.add('badge');
+          }
+          const d = _.pick(mailbox, ['uuid', 'name', 'path', 'unreadCount', 'delimiter']);
+          d.updated_at = new Date();
+          d.sort = i + 1;
+          list.push(d);
+        });
+        // db.bulkPut('mailboxes', list);
+      });
+    }
 
     /*********************************
      * //プライベート
@@ -157,28 +207,31 @@
      * view action
      *********************************/
     toggleMail(uid, e) {
-      (async function() {
-        if (!mailContents[uid]) {
-          const mail = await gmail.getMessage(uid);
+      if (!mailContents[uid]) {
+        const params = {
+          uid
+        };
+        gmailler.getMessage('main', params, (mail) => {
+          const id = `mail-content___${uid}`;
           const div = document.createElement('div');
-          div.setAttribute('id', `mail-content___${uid}`);
+          div.setAttribute('id', id);
           $$(`.mail-contents__${uid}`).appendChild(div);
 
-          mailContents[uid] = riot.mount(`#mail-content___${uid}`, 'mail-content', {
-            mail,
-            uid,
+          params.mail = mail;
+          mailContents[uid] = riot.mount(`#${id}`, 'mail-content', params);
+          gmailler.readMail('main', params, (res) => {
+            console.log(res);
           });
-          const add = await gmail.addFlags(uid, ['\\Seen']);
-        } else {
-          mailContents[uid][0].unmount(false);
-          mailContents[uid] = null;
-        }
-      }).call();
+        });
+      } else {
+        mailContents[uid][0].unmount(false);
+        mailContents[uid] = null;
+      }
     }
 
     search() {
       (async function() {
-        const mailbox = state.get('mailbox.list');
+        const mailbox = state.get('mailbox.target');
         const listMails = await gmail.search(mailbox.path, {
           unseen: true
         });
@@ -187,9 +240,13 @@
 
     moreMailBox() {
       (async function() {
-        const mailbox = state.get('mailbox.list');
-        const from = state.get('mailbox.from');
-        const listMails = await getMailBox(mailbox, from);
+        const mailbox = state.get('mailbox');
+
+        const listMails = gmailler.getMailboxSync('main', {
+          listMails: view.get('listMails'),
+          mailbox: mailbox.target,
+          from: mailbox.from,
+        });
         view.sets({
           listMails
         });
@@ -202,14 +259,21 @@
         e.preventDefault();
         view.restore('listMails');
         const mailbox = view.get('listMailboxes')[key];
-        const listMails = await getMailBox(mailbox, -10);
-        console.log('listMails', listMails);
-        state.set('mailbox.list', mailbox);
-        state.set('mailbox.from', -20);
+        const listMails = gmailler.getMailboxSync('main', {
+          listMails: [],
+          mailbox,
+          from: -10,
+        });
+        state.set('mailbox', {
+          target: mailbox,
+          from: -20,
+        });
         const selectedMailBox = view.get('selectedMailBox');
-        if (selectedMailBox.n !== null) selectedMailBox.list[selectedMailBox.n] = null;
+        const ele = document.querySelector(`#mailbox_span_${ key }`);
+        const oldClass = ele.classList.value;
+        if (selectedMailBox.n !== null) selectedMailBox.list[selectedMailBox.n] = oldClass;
         selectedMailBox.n = key;
-        selectedMailBox.list[key] = 'label label-primary';
+        selectedMailBox.list[key] = `${oldClass} label label-primary`;
         view.sets({
           showMailBox: true,
           mailboxLabel: mailbox.name,
@@ -240,22 +304,18 @@
 
     const observer = (name) => {
       (async function() {
-        observars[name] = Gmail.getInstance(name);
         const auth = storage.get('gmail');
-        observars[name].setOauthConfig(auth.user, auth);
-        await observars[name].createConnection();
-        observars[name].disconnected(async() => {
-          await observars[name].createConnection();
-        });
-        observars[name].observe((message) => {
+        gmailler.observer('observer.inbox', {
+          auth
+        }, (message) => {
           console.log(message);
-          toast(message);
         });
       }).call();
     }
 
     this.on('mount', function() {
-      setListmailboxes();
+      setViewDb();
+      setViewInit();
       observer('obs.INBOX');
       $$('body').classList.remove('start_page', 'empty', 'init-loading');
       communicator.send('window:resize:start', {

@@ -30,7 +30,7 @@
         subject: mail.subject,
         uid,
       });
-      $$(`#body_${uid}`).innerHTML = mail.html;
+      $$(`#body_${uid}`).innerHTML = mail.content;
     });
   </script>
 </mail-content>

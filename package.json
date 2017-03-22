@@ -25,6 +25,7 @@
     "inbox": "^1.1.59",
     "jconv": "^0.1.5",
     "lodash": "^4.17.4",
+    "lokijs": "^1.4.3",
     "mailparser": "^2.0.2",
     "moment": "^2.17.1",
     "node-notifier": "^5.1.2",
