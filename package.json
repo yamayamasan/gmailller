@@ -19,6 +19,7 @@
     "eslint-plugin-react": "^6.10.0"
   },
   "dependencies": {
+    "ace-min-noconflict": "^1.1.9",
     "co": "^4.6.0",
     "curl": "^0.1.4",
     "dexie": "^1.5.1",

@@ -2,15 +2,13 @@ html {
     height: 100%;
 }
 
-
 body.init-loading {
-  margin: 0;
-  color: #444 !important;
-  /*background-color: #141414;*/
-  font: 300 18px/18px Roboto, sans-serif;
-  text-align: initial !important;
+    margin: 0;
+    color: #444 !important;
+    /*background-color: #141414;*/
+    font: 300 18px/18px Roboto, sans-serif;
+    text-align: initial !important;
 }
-    
 
 .start_page {
     overflow: hidden;
@@ -18,7 +16,7 @@ body.init-loading {
 }
 
 .height100per {
-  height: 100%;
+    height: 100%;
 }
 
 .overflow-auto {
@@ -32,10 +30,30 @@ body.init-loading {
     right: 10px;
 }
 
-.mailitem {
-    cursor: pointer; 
+.footerItems {
+    position: fixed;
+    bottom: 0;
+    width: 35%;
+    right: 10px;
 }
 
+.markdown-box {
+    position: absolute;
+    z-index: 1002;
+    height: 70%;
+    bottom: 0;
+}
+
+#editor {
+    width: 75%;
+}
+
+.mailitem {
+    cursor: pointer;
+}
+
+
 /* loading */
+
 
 /* //loading */
