@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require('url');
 const _ = require('lodash');
 
-const Logger = require('./src/js/libs/logger');
+const Logger = require('./libs/logger');
 const logger = new Logger();
 
 const config = require('./config/app.json');
@@ -16,6 +16,8 @@ function createWindow() {
     protocol: 'file:',
     slashes: true,
   }));
+
+  logger.log(win, ['test']);
 
   win.on('closed', () => {
     logger.log('closed');

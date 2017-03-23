@@ -42,8 +42,19 @@ class LocalDb {
     return this.db[tblname].put(params);
   }
 
-  all(tblname) {
-    return this.db[tblname].toArray();
+  all(tblname, index = null) {
+    const all = this.db[tblname];
+    if (index) {
+      return all.toArray((values) => {
+        const r = {};
+        values.forEach((val) => {
+          const key = val[index];
+          r[key] = val;
+        });
+        return r;
+      });
+    }
+    return all.toArray();
   }
 
   table(tblname) {

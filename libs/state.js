@@ -5,10 +5,13 @@ class State {
   constructor(ipcMain) {
     this.ipc = ipcMain;
     this.data = {};
+    this.old = {};
     this.actions();
   }
 
   set(key, val) {
+    this.old[key] = _.cloneDeep(this.data)[key];
+    // this.old = _.cloneDeep(this.data);
     _.set(this.data, key, val);
   }
 
@@ -29,10 +32,9 @@ class State {
 
     this.ipc.on('state:set', (ev, arg) => {
       const key = Object.keys(arg)[0];
-      console.log(key, arg[key]);
       this.set(key, arg[key]);
 
-      ev.sender.send('state:set:res', arg);
+      ev.sender.send('state:set:res', arg, this.old);
     });
 
     this.ipc.on('state:get', (ev, arg) => {

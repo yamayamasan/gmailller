@@ -1,3 +1,6 @@
+const Mail = require(`${LIBS_DIR}/mail`);
+const mailLib = new Mail();
+
 class Gmailler {
 
   constructor(communicator) {
@@ -56,6 +59,10 @@ class Gmailler {
     this.on('getMailbox', cb);
   }
 
+  getMessageSync(key, params) {
+    return this.sendSync('getMessage', key, params);
+  }
+
   getMessage(key, params, cb = null) {
     this.send('getMessage', key, params);
     if (cb !== null) {
@@ -66,6 +73,18 @@ class Gmailler {
 
   onGetMessage(cb) {
     this.on('getMessage', cb);
+  }
+
+  addFlags(key, params, cb = null) {
+    this.send('addFlags', key, params);
+    if (cb !== null) {
+      this.onAddFlags(cb);
+    }
+    return this;
+  }
+
+  onAddFlags(cb) {
+    this.on('addFlags', cb);
   }
 
   observer(key, params, cb = null) {
@@ -110,6 +129,25 @@ class Gmailler {
       key,
       params,
     });
+  }
+
+  getMailByUid(key, uid) {
+    return (async() => {
+      const params = { uid };
+      let mail = await db.get('mails', params);
+      if (!mail) {
+        const orgMail = this.getMessageSync('main', params);
+        const parse = await mailLib.bodyParse(orgMail);
+        const pick = _.pick(parse, ['subject', 'text', 'html', 'content', 'messageId', 'from', 'to', 'date']);
+        mail = _.merge(pick, {
+          uid,
+          read: true,
+        });
+        db.put('mails', mail);
+        this.readMail('readMail', { uid, flags: ['\\Seen'] });
+      }
+      return mail;
+    }).call();
   }
 }
 

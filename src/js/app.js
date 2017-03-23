@@ -18,7 +18,6 @@ const _ = require('lodash');
 const moment = require('moment');
 const ReState = require(`${LIBS_DIR}/re.state`);
 const Storage = require(`${LIBS_DIR}/storage`);
-const Gmail = require(`${LIBS_DIR}/singlegmail`);
 const Gmailler = require(`${LIBS_DIR}/gmailler`);
 const Common = require(`${LIBS_DIR}/common`);
 const Curl = require(`${LIBS_DIR}/curl`);
@@ -53,6 +52,5 @@ require('fs').readdir(`${CONF_DIR}/db`, (e, files) => {
     const version = file.split('.')[1];
     dbSchemas.push(require(`${CONF_DIR}/db/${file}`));
   });
-  console.log(dbSchemas);
   db.init(dbSchemas);
 });

@@ -24,7 +24,6 @@
     }
   </style>
   <script>
-    const gmail = Gmail.getInstance('main');
     const gUrl = {
       auth: 'https://accounts.google.com/o/oauth2/auth',
       approval: 'https://accounts.google.com/o/oauth2/approval',

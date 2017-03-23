@@ -39,6 +39,7 @@ class Mail {
     const object = Object.assign({}, this.object);
     this.object = {};
     if (object.charset === 'iso-2022-jp') {
+      console.log('object.charset', object.charset);
       trans = jconv.convert(text, 'ISO-2022-JP', 'UTF-8').toString();
     }
     /*

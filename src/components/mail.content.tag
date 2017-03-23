@@ -22,15 +22,12 @@
       uid: null,
     }, this);
 
-    this.on('mount', function() {
-      console.log(this);
-      const mail = this.opts.mail;
-      const uid = this.opts.uid;
+    this.on('mount', async function() {
       view.sets({
-        subject: mail.subject,
-        uid,
+        subject: this.opts.subject,
+        uid: this.opts.uid,
       });
-      $$(`#body_${uid}`).innerHTML = mail.content;
+      $$(`#body_${this.opts.uid}`).innerHTML = this.opts.content;
     });
   </script>
 </mail-content>

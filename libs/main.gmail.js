@@ -156,21 +156,22 @@ class Gmail {
       // let dbdata = await db.get('mails', { uid });
       // if (dbdata === null) {
       const fetchData = await this.fetchMessage(uid);
-      const dbdata = {
-        uid: uid,
-        subject: fetchData.subject,
-        text: fetchData.text,
-        html: fetchData.html,
-        content: fetchData.html || fetchData.text,
-        messageId: fetchData.messageId,
-        from: fetchData.from,
-        to: fetchData.to,
-        date: fetchData.date,
-        read: true,
-      };
+      return fetchData;
+      // const dbdata = {
+      //   uid: uid,
+      //   subject: fetchData.subject,
+      //   text: fetchData.text,
+      //   html: fetchData.html,
+      //   content: fetchData.html || fetchData.text,
+      //   messageId: fetchData.messageId,
+      //   from: fetchData.from,
+      //   to: fetchData.to,
+      //   date: fetchData.date,
+      //   read: true,
+      // };
       //   db.put('mails', dbdata);
       // }
-      return dbdata;
+      // return dbdata;
     }.bind(this)).call();
   }
 
@@ -184,9 +185,10 @@ class Gmail {
 
       messageStream.on('end', () => {
         const mail = new Mail();
-        mail.bodyParse(body).then((content) => {
-          resolve(content);
-        });
+        resolve(body);
+        // mail.bodyParse(body).then((content) => {
+        // resolve(content);
+        // });
       });
     });
   }
