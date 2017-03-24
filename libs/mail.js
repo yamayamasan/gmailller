@@ -21,14 +21,6 @@ class Mail {
         if (err) reject(err);
         const content = mail.html ? mail.html : mail.text;
         mail.content = this.convertText(content);
-
-        // if (mail.html) {
-        //   mail.html = this.convertText(mail.html);
-        //   mail.content = mail.html;
-        // } else {
-        //   mail.text = this.convertText(mail.text);
-        //   mail.content = mail.text;
-        // }
         resolve(mail);
       });
     });
@@ -39,18 +31,8 @@ class Mail {
     const object = Object.assign({}, this.object);
     this.object = {};
     if (object.charset === 'iso-2022-jp') {
-      console.log('object.charset', object.charset);
       trans = jconv.convert(text, 'ISO-2022-JP', 'UTF-8').toString();
     }
-    /*
-    if (object.charset === 'iso-2022-jp' &&
-      object.encoding === 'quoted-printable') {
-      trans = jconv.convert(text, 'ISO-2022-JP', 'UTF-8').toString();
-    } else if (object.charset === 'iso-2022-jp' &&
-      object.encoding === '7bit') {
-      trans = jconv.convert(text, 'ISO-2022-JP', 'UTF-8').toString();
-    }
-    */
     return trans;
   }
 

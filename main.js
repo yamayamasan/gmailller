@@ -67,3 +67,20 @@ const gmailclient = new GmailClient(ipcMain);
 // state
 const State = require('./libs/state');
 const state = new State(ipcMain);
+
+/*
+const os = require('os');
+setInterval(() => {
+  const memory = process.memoryUsage();
+  const total = os.totalmem();
+  const free = os.freemem();
+  console.log(`
+    total: ${total}
+    free: ${free}
+    rss: ${memory.rss}
+    heapTotal: ${memory.heapTotal}
+    heapUsed: ${memory.heapUsed}
+    external: ${memory.external}
+  `);
+}, 5000);
+*/

@@ -54,3 +54,13 @@ require('fs').readdir(`${CONF_DIR}/db`, (e, files) => {
   });
   db.init(dbSchemas);
 });
+
+setInterval(() => {
+  const memory = process.memoryUsage();
+  console.log(`
+    rss: ${memory.rss}
+    heapTotal: ${memory.heapTotal}
+    heapUsed: ${memory.heapUsed}
+    external: ${memory.external}
+  `);
+}, 5000);

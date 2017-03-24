@@ -12,12 +12,19 @@ class View {
   }
 
   get(key) {
-    return this.context.view[key];
+    return _.get(this.context.view, key);
+  }
+
+  set(key, val, fire = true) {
+    _.set(this.context.view, key, val);
+    if (fire) {
+      this.context.update();
+    }
   }
 
   sets(values) {
     _.forEach(values, (val, key) => {
-      this.context.view[key] = val;
+      this.set(key, val, false);
     });
     this.context.update();
   }
