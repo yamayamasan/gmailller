@@ -58,37 +58,37 @@ class GmailClient {
     });
   }
 
-  listMailboxes() {
-    this.ipcon('listMailboxes', async(ev, key, params) => {
+  connected(action, cb) {
+    this.ipc.on(`gmail:${action}`, async(ev, arg) => {
+      const key = arg.key || 'main';
       if (!this.hasConnect(key)) {
-        await this.connect(key, params);
+        await this.connect(key, arg.params);
       }
-      const listMailboxes = await this.instance[key].listMailboxes();
-      // const processChildren = [];
-      // for (let i = 0; i < listMailboxes.length; i++) {
-      //   listMailboxes[i].uuid = GmailClient.getHash(listMailboxes[i].name);
-      // }
+      const res = await cb(ev, key, arg.params, this.instance[key]);
+      this.send(ev, action, res);
+    });
+  }
+
+  listMailboxes() {
+    this.connected('listMailboxes', async(ev, key, params, instance) => {
+      const listMailboxes = await instance.listMailboxes();
       this.closeConnectOtMain(key);
-      this.send(ev, 'listMailboxes', listMailboxes);
+      return listMailboxes;
     });
   }
 
   unreadlistMailboxes() {
-    this.ipcon('unreadlistMailboxes', async(ev, key, params) => {
-      if (!this.hasConnect(key)) {
-        await this.connect(key, params);
-      }
-      const listMailboxes = await this.instance[key].listMailboxes();
+    this.connected('unreadlistMailboxes', async(ev, key, params, instance) => {
+      const listMailboxes = await instance.listMailboxes();
       for (let i = 0; i < listMailboxes.length; i++) {
         const mail = listMailboxes[i];
         if (mail.name.match(/Mailbox|Gmail|Airmail/) == null) {
-          const count = await this.instance[key].countUnRead(mail.path);
+          const count = await instance.countUnRead(mail.path);
           listMailboxes[i].unreadCount = (count > 99) ? '+99' : count;
         }
-        listMailboxes[i].uuid = GmailClient.getHash(mail.name);
       }
       this.closeConnectOtMain(key);
-      this.send(ev, 'unreadlistMailboxes', listMailboxes);
+      return listMailboxes;
     });
   }
 
@@ -107,29 +107,21 @@ class GmailClient {
   }
 
   getMailbox() {
-    this.ipcon('getMailbox', async(ev, key, params) => {
+    this.connected('getMailbox', async(ev, key, params, instance) => {
       const orglistMails = params.listMails;
       const mailbox = params.mailbox;
       const from = params.from;
 
-      console.log(mailbox, from);
-
-      const addlistMails = await this.instance.main.listMessages(mailbox.path, from);
+      const addlistMails = await instance.listMessages(mailbox.path, from);
       const rAddlistMails = _.reverse(addlistMails);
-      const res = orglistMails.concat(rAddlistMails);
-
-      // this.cache['mailboxes'] = res;
-      this.send(ev, 'getMailbox', res);
+      return orglistMails.concat(rAddlistMails);
     });
   }
 
   readMail() {
-    this.ipcon('readMail', async(ev, key, params) => {
-      if (!this.hasConnect(key)) {
-        await this.connect(key, params);
-      }
-      const add = await this.instance[key].addFlags(params.uid, ['\\Seen']);
-      this.send(ev, 'readMail', { uid: params.uid, flags: add });
+    this.connected('readMail', async(ev, key, params, instance) => {
+      const add = await instance.addFlags(params.uid, ['\\Seen']);
+      return { uid: params.uid, flags: add };
     });
   }
 
@@ -144,19 +136,19 @@ class GmailClient {
   }
 
   addFlags() {
-    this.ipcon('addFlags', async(ev, key, params) => {
-      if (!this.hasConnect(key)) {
-        await this.connect(key, params);
-      }
-      const flags = await this.instance[key].addFlags(params.uid, params.flags);
-      this.send(ev, 'addFlags', { uid: params.uid, flags: flags });
+    this.connected('addFlags', async(ev, key, params, instance) => {
+      const flags = await instance.addFlags(params.uid, params.flags);
+      return {
+        uid: params.uid,
+        flags,
+      };
     });
   }
 
   postMessage() {
-    this.ipcon('postMessage', async(ev, key, params) => {
-      const store = await this.instance[key].postMessage(params.from, params.message);
-      this.send(ev, 'postMessage', store);
+    this.connected('addFlags', async(ev, key, params, instance) => {
+      const store = await instance.postMessage(params.from, params.message);
+      return store;
     });
   }
 
