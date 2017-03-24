@@ -1,6 +1,8 @@
 const qs = require('querystring');
 const inbox = require('inbox');
+const nodemailer = require('nodemailer');
 const _ = require('lodash');
+const crypto = require('crypto');
 
 const Mail = require('./mail');
 
@@ -92,6 +94,26 @@ class Gmail {
     });
   }
 
+  listMailWithChildren(mailbox) {
+    return new Promise((resolve, reject) => {
+      mailbox.listChildren((error, children) => {
+        children.forEach((child) => {
+          child.parent = mailbox.uuid;
+        });
+        resolve(children);
+      });
+    });
+  }
+
+  static asyncForEach(array, cb) {
+    (async() => {
+      for (let i = 0; i < array.length; i++) {
+        const o = array[i];
+        await cb(o);
+      }
+    });
+  }
+
   /**
    * get list mailbox
    * 
@@ -101,9 +123,21 @@ class Gmail {
    */
   listMailboxes() {
     return new Promise((resolve, reject) => {
-      this.client.listMailboxes((err, mailboxes) => {
+      this.client.listMailboxes(async(err, mailboxes) => {
         if (err) reject(err);
-        resolve(mailboxes);
+        let childList = [];
+        for (let i = 0; i < mailboxes.length; i++) {
+          const mailbox = mailboxes[i];
+          mailbox.uuid = Gmail.getHash(mailbox.name);
+          if (mailbox.hasChildren) {
+            const children = await this.listMailWithChildren(mailbox);
+            children.forEach((child) => {
+              child.uuid = Gmail.getHash(child.name);
+              childList.push(child);
+            });
+          }
+        }
+        resolve(mailboxes.concat(childList));
       });
     });
   }
@@ -246,6 +280,41 @@ class Gmail {
     });
   }
 
+  postMessage(from, message) {
+    const auth = Object.assign({}, this.oauth);
+    auth.type = 'OAuth2';
+    return new Promise((resolve, reject) => {
+      const smtp = nodemailer.createTransport({
+        service: 'Gmail',
+        auth,
+        debug: true,
+      }, from);
+
+      smtp.sendMail(message, (err, info) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        }
+        console.log(info);
+        smtp.close();
+        resolve(info);
+      });
+    });
+  }
+
+  storeMessage(path, message) {
+    return new Promise((resolve, reject) => {
+      this.client.openMailbox(path, (err) => {
+        if (err) reject(err);
+
+        this.client.storeMessage(message, (err, params) => {
+          console.log(err, params);
+          resolve(params);
+        });
+      });
+    });
+  }
+
   observe(cb, path = 'INBOX') {
     this.client.openMailbox(path, (error, info) => {
       if (error) throw error;
@@ -284,6 +353,10 @@ class Gmail {
       if (isArray && !isObject) res[val] = obj[val];
     });
     return res;
+  }
+
+  static getHash(text) {
+    return crypto.createHash('sha256').update(text).digest('hex');
   }
 }
 

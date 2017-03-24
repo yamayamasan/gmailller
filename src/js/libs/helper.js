@@ -1,9 +1,12 @@
 const moment = require('moment');
 
+const inputValues = {};
+
 class Helper {
 
   constructor(_this_) {
     this.context = _this_;
+    this.inputValues = {};
   }
 
   logout() {
@@ -17,6 +20,16 @@ class Helper {
     return moment(org).format(fmt);
   }
 
+  input(e) {
+    inputValues[e.target.name] = e.target.value;
+  }
+
+  getValue(key) {
+    if (key) {
+      return inputValues[key] || null;
+    }
+    return inputValues;
+  }
 }
 
 module.exports = Helper;

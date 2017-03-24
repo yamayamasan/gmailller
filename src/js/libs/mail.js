@@ -21,14 +21,9 @@ class Mail {
         if (err) reject(err);
         const content = mail.html ? mail.html : mail.text;
         mail.content = this.convertText(content);
-
-        // if (mail.html) {
-        //   mail.html = this.convertText(mail.html);
-        //   mail.content = mail.html;
-        // } else {
-        //   mail.text = this.convertText(mail.text);
-        //   mail.content = mail.text;
-        // }
+        mail.subject = this.convertText(mail.subject);
+        console.log('subject::', mail);
+        this.object = {};
         resolve(mail);
       });
     });
@@ -37,7 +32,7 @@ class Mail {
   convertText(text) {
     let trans = text;
     const object = Object.assign({}, this.object);
-    this.object = {};
+
     if (object.charset === 'iso-2022-jp') {
       trans = jconv.convert(text, 'ISO-2022-JP', 'UTF-8').toString();
     }

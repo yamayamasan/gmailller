@@ -112,8 +112,28 @@
       });
     });
 
-    this.on('mount', function() {
-      setViewInit();
+    this.on('mount', () => {
+      // setViewInit();
+      gmailler.onListMailboxes(async(listMailboxes) => {
+        let listboxes = await db.all('mailboxes', 'uuid');
+        const selectedMailBox = view.get('selectedMailBox');
+        console.log('listMailboxes', listMailboxes);
+        listMailboxes.forEach((mail) => {
+          if (listboxes[mail.uuid]) {
+            mail.unreadCount = listboxes[mail.uuid].unreadCount
+          }
+          selectedMailBox.list[mail.path] = null;
+        });
+        view.sets({
+          listMailboxes,
+          selectedMailBox
+        });
+        state.set('listMailboxes', listMailboxes);
+      });
+
+      gmailler.onUnreadlistMailboxes((listMailboxes) => {
+        state.set('listMailboxes', listMailboxes);
+      });
     });
   </script>
 </mailer-nav>

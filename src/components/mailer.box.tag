@@ -27,10 +27,12 @@
     </div>
     <div class="panel-footer">
       <button class="btn btn-primary btn-block" onclick={ moreMailBox }>More</button>
+      <button class="btn btn-primary btn-block" onclick={ onlyMailBox }>Only</button>
     </div>
   </div>
 
   <script>
+    const FROM_RANGE = 50;
     helper = new Helper(this);
 
     const mailContents = {};
@@ -76,6 +78,15 @@
         closeMail(uid);
       }
     }
+
+    // onlyMailBox() {
+    //   const mailbox = state.get('mailbox');
+    //   const listMails = await gmailler.getUnreadMailboxSync('main', {
+    //     listMails: [],
+    //     mailbox: mailbox.target,
+    //     from: -10,
+    //   });
+    // }
 
     moreMailBox() {
       const mailbox = state.get('mailbox');

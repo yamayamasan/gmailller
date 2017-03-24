@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const Gmail = require('./gmail');
+const Gmail = require('./main.gmail');
 const notifier = require('node-notifier');
 const crypto = require('crypto');
 
@@ -9,29 +9,8 @@ class GmailClient {
     this.ipc = ipcMain;
     this.instance = {};
     this.cache = {};
-    this.actions();
-
-    const actions = [
-      'authGmail',
-      'connection',
-      'listMailboxes',
-      'unreadlistMailboxes',
-      'getMailbox',
-      'getMessage',
-      'addFlags',
-      'observer',
-      'readMail',
-      'postMessage',
-    ];
-    actions.forEach((action) => {
-      const syncAction = `${action}Sync`;
-      if (this[action]) {
-        this[action]();
-      }
-      if (this[syncAction]) {
-        this[syncAction]();
-      }
-    });
+    this.communicater();
+    this.configs = {};
   }
 
   send(ev, action, params) {
@@ -44,36 +23,46 @@ class GmailClient {
     });
   }
 
-  authGmailSync() {
+  actions(key, fnc, params) {
+    if (!this.hasConnect(key)) {
+      await this.connect(key, params);
+    }
+    const listMailboxes = await this.instance[key].listMailboxes();
+  }
+
+  communicater() {
+    // setup
+    this.ipcon('setup.sync', (ev, key, params) => {
+      const ckey = GmailClient.getHash(params.auth.user);
+      this.configs[ckey] = params.auth;
+      this.instance[key] = new Gmail();
+      this.instance[key].setOauthConfig(params.auth.user, params.auth);
+      ev.returnValue = true;
+    });
+
     this.ipcon('authGmail.sync', async(ev) => {
       const tmp = new Gmail();
       ev.returnValue = tmp.authGmail();
     });
-  }
 
-  connection() {
     this.ipcon('connection', async(ev, key, params) => {
       await this.connect(key, params);
       this.send(ev, 'connection', key);
     });
-  }
 
-  listMailboxes() {
     this.ipcon('listMailboxes', async(ev, key, params) => {
-      if (!this.hasConnect(key)) {
-        await this.connect(key, params);
-      }
-      const listMailboxes = await this.instance[key].listMailboxes();
-      // const processChildren = [];
-      // for (let i = 0; i < listMailboxes.length; i++) {
-      //   listMailboxes[i].uuid = GmailClient.getHash(listMailboxes[i].name);
+      await this.actions(key, 'listMailboxes', params);
+      // if (!this.hasConnect(key)) {
+      //   await this.connect(key, params);
       // }
+      // const listMailboxes = await this.instance[key].listMailboxes();
       this.closeConnectOtMain(key);
+      for (let i = 0; i < listMailboxes.length; i++) {
+        listMailboxes[i].uuid = GmailClient.getHash(listMailboxes[i].name);
+      }
       this.send(ev, 'listMailboxes', listMailboxes);
     });
-  }
 
-  unreadlistMailboxes() {
     this.ipcon('unreadlistMailboxes', async(ev, key, params) => {
       if (!this.hasConnect(key)) {
         await this.connect(key, params);
@@ -90,9 +79,7 @@ class GmailClient {
       this.closeConnectOtMain(key);
       this.send(ev, 'unreadlistMailboxes', listMailboxes);
     });
-  }
 
-  getMailboxSync() {
     this.ipcon('getMailbox.sync', async(ev, key, params) => {
       const orglistMails = params.listMails;
       const mailbox = params.mailbox;
@@ -104,9 +91,7 @@ class GmailClient {
       this.cache['mailboxes'] = res;
       ev.returnValue = res;
     });
-  }
 
-  getMailbox() {
     this.ipcon('getMailbox', async(ev, key, params) => {
       const orglistMails = params.listMails;
       const mailbox = params.mailbox;
@@ -121,9 +106,7 @@ class GmailClient {
       // this.cache['mailboxes'] = res;
       this.send(ev, 'getMailbox', res);
     });
-  }
 
-  readMail() {
     this.ipcon('readMail', async(ev, key, params) => {
       if (!this.hasConnect(key)) {
         await this.connect(key, params);
@@ -131,9 +114,7 @@ class GmailClient {
       const add = await this.instance[key].addFlags(params.uid, ['\\Seen']);
       this.send(ev, 'readMail', { uid: params.uid, flags: add });
     });
-  }
 
-  getMessageSync() {
     this.ipcon('getMessage.sync', async(ev, key, params) => {
       if (!this.hasConnect(key)) {
         await this.connect(key, params);
@@ -141,9 +122,7 @@ class GmailClient {
       const mail = await this.instance[key].getMessage(params.uid);
       ev.returnValue = mail;
     });
-  }
 
-  addFlags() {
     this.ipcon('addFlags', async(ev, key, params) => {
       if (!this.hasConnect(key)) {
         await this.connect(key, params);
@@ -151,16 +130,23 @@ class GmailClient {
       const flags = await this.instance[key].addFlags(params.uid, params.flags);
       this.send(ev, 'addFlags', { uid: params.uid, flags: flags });
     });
-  }
 
-  postMessage() {
     this.ipcon('postMessage', async(ev, key, params) => {
       const store = await this.instance[key].postMessage(params.from, params.message);
       this.send(ev, 'postMessage', store);
     });
-  }
 
-  actions() {
+    // this.ipc.on('gmail:getMailbox', async(ev, arg) => {
+    //   const orglistMails = arg.params.listMails;
+    //   const mailbox = arg.params.mailbox;
+    //   const from = arg.params.from;
+
+    //   const addlistMails = await this.instance.main.listMessages(mailbox.path, from);
+    //   const rAddlistMails = _.reverse(addlistMails);
+    //   const res = orglistMails.concat(rAddlistMails);
+    //   ev.returnValue = res;
+    // });
+
     this.ipc.on('gmail:observer', async(ev, arg) => {
       const key = arg.key;
       const params = arg.params;
@@ -228,8 +214,9 @@ class GmailClient {
   }
 
   async connect(key, params) {
-    this.instance[key] = new Gmail();
-    this.instance[key].setOauthConfig(params.auth.user, params.auth);
+    if (!this.instance[key]) {
+      throw new Error();
+    }
     await this.instance[key].createConnection();
   }
 

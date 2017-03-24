@@ -46,13 +46,8 @@ app.on('activate', () => {
 // resize
 ipcMain.on('window:resize:start', (ev, arg) => {
   if (arg) {
-    const currentSize = win.getSize();
     if (arg.height && arg.width) {
-      // if ((arg.height !== currentSize[1]) || (arg.width !== currentSize[0])) {
-      //   win.setSize(currentSize[0], currentSize[1]);
-      // } else {
       win.setSize(arg.width, arg.height);
-      // }
     }
     if (arg.resizable) {
       win.setResizable(arg.resizable);
@@ -62,12 +57,12 @@ ipcMain.on('window:resize:start', (ev, arg) => {
 });
 
 // loki
-const Loki = require('./libs/lokiDb');
-const loki = new Loki('./lokidb/db.json', ['user', 'mailboxes', 'mails']);
+// const Loki = require('./libs/lokiDb');
+// const loki = new Loki('./lokidb/db.json', ['user', 'mailboxes', 'mails']);
 
 // gmail
 const GmailClient = require('./libs/gmail_client');
-const gmailclient = new GmailClient(ipcMain, loki);
+const gmailclient = new GmailClient(ipcMain);
 
 // state
 const State = require('./libs/state');

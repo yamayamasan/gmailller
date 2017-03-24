@@ -1,13 +1,19 @@
 <toast>
-  <div class="toast toast-primary toastNewMail" if={ view.show }>
+  <div class="toast toastNewMail" if={ view.show }>
     <button class="btn btn-clear float-right"></button>
-    <i class="icon icon-markunread"></i> {view.subject}
+    <div class="text-left" if={ view.showLoading }>
+      <div class="loading"></div>
+    </div>
+    <!--<i class="icon icon-markunread"></i>-->
+    <div class="text-center">{view.subject}</div>
   </div>
 
   <script>
     const view = new View({
-      show: false,
-      subject: null,
+      show: true,
+      showLoading: false,
+      // subject: null,
+      subject: 'loading...',
     }, this);
 
     state.observe('toast.message', (options) => {

@@ -11,7 +11,6 @@ class State {
 
   set(key, val) {
     this.old[key] = _.cloneDeep(this.data)[key];
-    // this.old = _.cloneDeep(this.data);
     _.set(this.data, key, val);
   }
 
