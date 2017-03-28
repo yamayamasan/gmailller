@@ -19,9 +19,29 @@ class Mail {
     return new Promise((resolve, reject) => {
       simpleParser(this.body, (err, mail) => {
         if (err) reject(err);
-        const content = mail.html ? mail.html : mail.text;
-        mail.content = this.convertText(content);
-        resolve(mail);
+        const content = (function(mail) {
+          if (mail.html) {
+            return this.convertText(mail.html);
+          }
+          const tmp = this.convertText(mail.text);
+          return tmp.replace(/\r\n|\r|\n/g, '<br />');
+        }.bind(this, mail)).call();
+
+        // let content = null;
+        // if (mail.html) {
+        //   content = this.convertText(mail.html);
+        // } else {
+        //   const tmp = this.convertText(mail.text);
+        //   content = tmp.replace(/\r\n|\r|\n/g, '<br />');
+        // }
+        // mail.content = this.convertText(content);
+        // mail.subject = this.convertText(mail.subject);
+        const copy = _.cloneDeep(mail);
+        copy.content = this.convertText(content);
+        copy.subject = this.convertText(mail.subject);
+        console.log(copy);
+        this.object = {};
+        resolve(copy);
       });
     });
   }
@@ -29,7 +49,6 @@ class Mail {
   convertText(text) {
     let trans = text;
     const object = Object.assign({}, this.object);
-    this.object = {};
     if (object.charset === 'iso-2022-jp') {
       trans = jconv.convert(text, 'ISO-2022-JP', 'UTF-8').toString();
     }

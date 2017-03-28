@@ -1,5 +1,6 @@
 const simpleParser = require('mailparser').simpleParser;
 const jconv = require('jconv');
+const jschardet = require('jschardet');
 
 class Mail {
 
@@ -14,28 +15,40 @@ class Mail {
 
   bodyParse(body = null) {
     if (body) this.body = body;
-    this.getCharset();
-    this.getContentTypeEncoding();
     return new Promise((resolve, reject) => {
       simpleParser(this.body, (err, mail) => {
         if (err) reject(err);
-        const content = mail.html ? mail.html : mail.text;
-        mail.content = this.convertText(content);
-        mail.subject = this.convertText(mail.subject);
-        this.object = {};
-        resolve(mail);
+        const content = (function(mail) {
+          if (mail.html) {
+            return Mail.convertText(mail.html);
+          }
+          const tmp = Mail.convertText(mail.text);
+          return tmp.replace(/\r\n|\r|\n/g, '<br />');
+        }.bind(this, mail)).call();
+
+        const copy = _.cloneDeep(mail);
+        copy.content = content;
+        copy.subject = Mail.convertText(mail.subject);
+        resolve(copy);
       });
     });
   }
 
-  convertText(text) {
+  static convertText(text) {
     let trans = text;
-    const object = Object.assign({}, this.object);
+    const detect = jschardet.detect(text);
 
-    if (object.charset === 'iso-2022-jp') {
-      trans = jconv.convert(text, 'ISO-2022-JP', 'UTF-8').toString();
+    if (Mail.isEncoding(detect.encoding) && detect.confidence > 0.5) {
+      trans = jconv.convert(text, detect.encoding, 'UTF-8').toString();
     }
     return trans;
+  }
+
+  static isEncoding(encoding) {
+    if (encoding == 'utf-8' || encoding == 'ascii') {
+      return false;
+    }
+    return true;
   }
 
   getCharset() {

@@ -16,6 +16,7 @@ class Gmailler {
       'observer',
       'readMail',
       'postMessage',
+      'disconnected',
     ];
 
     actions.forEach((action) => {
@@ -54,7 +55,7 @@ class Gmailler {
     });
   }
 
-  getMailByUid(key, uid) {
+  getMailByUid(key, path, uid) {
     return (async() => {
       const params = { uid };
       let mail = await db.get('mails', params);
@@ -67,7 +68,14 @@ class Gmailler {
           read: true,
         });
         db.put('mails', mail);
-        this.readMail('readMail', { uid, flags: ['\\Seen'] });
+        const auth = storage.get('gmail');
+        // this.readMail('readMail', {
+        //   uid,
+        //   flags: ['\\Seen'],
+        //   auth,
+        //   path,
+        // });
+        // this.onReadMail();
       }
       return mail;
     }).call();
@@ -78,6 +86,7 @@ class Gmailler {
 
     });
   }
+
 }
 
 module.exports = Gmailler;

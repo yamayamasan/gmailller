@@ -29,14 +29,12 @@
       gmailler.getMailbox('main', {
         listMails: [],
         mailbox,
-        from: -50,
-        limit: 50,
+        from: -10,
       });
       state.sets({
         mailbox: {
           target: mailbox,
-          from: -100,
-          limit: 50,
+          from: -20,
         },
         mailboxLabel: mailbox.name,
         mailboxPath: mailbox.path,

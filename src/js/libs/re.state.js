@@ -28,7 +28,6 @@ class ReState {
 
   removeLocal(key) {
     const d = _.omit(this.data, key);
-    console.log(d);
     this.data = d;
   }
 

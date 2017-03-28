@@ -4,8 +4,6 @@ const nodemailer = require('nodemailer');
 const _ = require('lodash');
 const crypto = require('crypto');
 
-const Mail = require('./mail');
-
 const config = {
   client: require(`../config/client_id.json`).installed,
   gmail: require(`../config/auth.json`).gmail,
@@ -187,25 +185,8 @@ class Gmail {
 
   getMessage(uid) {
     return (async function() {
-      // let dbdata = await db.get('mails', { uid });
-      // if (dbdata === null) {
       const fetchData = await this.fetchMessage(uid);
       return fetchData;
-      // const dbdata = {
-      //   uid: uid,
-      //   subject: fetchData.subject,
-      //   text: fetchData.text,
-      //   html: fetchData.html,
-      //   content: fetchData.html || fetchData.text,
-      //   messageId: fetchData.messageId,
-      //   from: fetchData.from,
-      //   to: fetchData.to,
-      //   date: fetchData.date,
-      //   read: true,
-      // };
-      //   db.put('mails', dbdata);
-      // }
-      // return dbdata;
     }.bind(this)).call();
   }
 
@@ -218,11 +199,7 @@ class Gmail {
       });
 
       messageStream.on('end', () => {
-        const mail = new Mail();
         resolve(body);
-        // mail.bodyParse(body).then((content) => {
-        // resolve(content);
-        // });
       });
     });
   }
@@ -234,12 +211,17 @@ class Gmail {
     });
   }
 
-  addFlags(uid, flags) {
+  addFlags(path, uid, flags) {
     return new Promise((resolve, reject) => {
-      this.client.addFlags(uid, flags, (err, info) => {
-        if (err) reject(err);
-        resolve(info);
+      this.client.openMailbox(path, (err0, info) => {
+        if (err0) throw reject(err0);
+        this.client.addFlags(uid, flags, (err, info) => {
+          if (err) reject(err);
+          resolve(info);
+        });
       });
+    }).catch((e) => {
+      console.log(e);
     });
   }
 

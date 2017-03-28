@@ -27,6 +27,7 @@
     </div>
     <div class="panel-footer">
       <button class="btn btn-primary btn-block" onclick={ moreMailBox }>More</button>
+      <button class="btn btn-primary btn-block" onclick={ onlyMailBox }>Only</button>
     </div>
   </div>
 
