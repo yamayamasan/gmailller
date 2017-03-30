@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>gmailller</title>
+  <link rel="stylesheet" href="../../node_modules/spectre.css/dist/spectre.min.css" />
+  <link rel="stylesheet" href="../../node_modules/spectre.css/dist/spectre-exp.min.css" />
+  <link rel="stylesheet" href="../../node_modules/spectre.css/docs/css/docs.css" />
+  <link rel="stylesheet" href="../../node_modules/spectre.css/docs/font/style.css" />
+  <link rel="stylesheet" href="./css/app.style.css" />
+</head>
+
+<body class="start_page empty height100per init-loading">
+  <div id="main" class="height100per">
+
+    <div class="container height100per">
+      <start></start>
+      <mailer></mailer>
+      <toast></toast>
+      <!--<settings></settings>-->
+    </div>
+  </div>
+</body>
+
+<script src='../../node_modules/riot/riot+compiler.min.js'></script>
+<script src='../js/app.js'></script>
+<script src="./pages/start.tag" type="riot/tag"></script>
+<script src="./pages/mailer.tag" type="riot/tag"></script>
+<script src="./components/mail.content.tag" type="riot/tag"></script>
+<script src="./components/login.loading.tag" type="riot/tag"></script>
+<script src="./components/mailer.nav.tag" type="riot/tag"></script>
+<script src="./components/mailer.box.tag" type="riot/tag"></script>
+<script src="./components/toast.tag" type="riot/tag"></script>
+<script src="./components/markdown.tag" type="riot/tag"></script>
+<script>
+  riot.mount('start');
+  riot.mount('toast');
+
+</script>
+
+</html>

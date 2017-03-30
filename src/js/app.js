@@ -2,12 +2,12 @@
  * Global
  */
 const DIR = __dirname;
-const LIBS_DIR = `${DIR}/js/libs`;
-const CONF_DIR = `${DIR}/../config`;
+const LIBS_DIR = `${DIR}/../js/libs`;
+const CONF_DIR = `${DIR}/../../config`;
 
 const EventEmitter = require('events');
 
-class AppEmitter extends EventEmitter {}
+class AppEmitter extends EventEmitter { }
 const appEmitter = new AppEmitter();
 
 

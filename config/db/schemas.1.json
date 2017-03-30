@@ -1,6 +1,6 @@
 {
   "schema": {
-    "version": 3,
+    "version": 2,
     "tables": [{
       "table": "user",
       "columns": {

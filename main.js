@@ -12,7 +12,8 @@ let win = null;
 function createWindow() {
   win = new BrowserWindow(config.default);
   win.loadURL(url.format({
-    pathname: `${__dirname}/src/index.html`,
+    // pathname: `${__dirname}/src/spectre/index.html`,
+    pathname: `${__dirname}/src/materiallite/index.html`,
     protocol: 'file:',
     slashes: true,
   }));

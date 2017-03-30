@@ -19,8 +19,16 @@ class Mail {
     return new Promise((resolve, reject) => {
       simpleParser(this.body, (err, mail) => {
         if (err) reject(err);
-        const content = mail.html ? mail.html : mail.text;
-        mail.content = this.convertText(content);
+        let content = null;
+        console.log(mail.html)
+        if (mail.html) {
+          content = this.convertText(mail.html);
+        } else {
+          content = this.convertText(mail.text);
+          console.log(content)
+          content = content.replace(/\r\n|\r|\n/g, '<br />');
+        }
+        mail.content = content;
         resolve(mail);
       });
     });
